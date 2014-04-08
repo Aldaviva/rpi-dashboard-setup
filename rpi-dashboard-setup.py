@@ -1,18 +1,28 @@
 #!/usr/bin/env python
 
-import subprocess
+import pwd
+import errno
+import argparse
+import fileinput
 import logging
 import os
-import fileinput
-import errno
-from pwd import getpwnam
+import sqlite3
+import subprocess
+import urllib
 
 logging.basicConfig(level=logging.DEBUG)
 
-ADMIN_USERNAME = "ben"
-DASHBOARD_USERNAME = "dashboard"
-LOCALE = "en_US.UTF-8"
-TIMEZONE = "US/Pacific-New"
+ADMIN_USERNAME               = "ben"
+CHROMIUM_PROFILE_URL         = "http://skadi.bluejeansnet.com/rpi-dashboard/chromium-profile.tar.gz"
+DASHBOARD_USERNAME           = "dashboard"
+LOCALE                       = "en_US.UTF-8"
+PANOPTICHROME_EXTENSION_ID   = "jmjpnaplgnfnnlfofkbpogokimpjocmg"
+PANOPTICHROME_SERVER_ADDRESS = "skadi.bluejeansnet.com:8081"
+TIMEZONE                     = "US/Pacific-New"
+
+parser = argparse.ArgumentParser(description='Set up a Raspberry Pi to act as a dashboard', usage='sudo python rpi-dashboard-setup.py')
+parser.add_argument('--skip-packages', action='store_true', help='skip downloading and installation of apt packages')
+args = parser.parse_args()
 
 def create_admin_user():
     log("Creating admin user "+ADMIN_USERNAME+"...")
@@ -35,8 +45,8 @@ def create_dashboard_user():
 
 def create_admin_ssh():
     log("Creating admin user SSH authorization...")
-    adminUid = getpwnam(ADMIN_USERNAME).pw_uid
-    adminGid = getpwnam(ADMIN_USERNAME).pw_gid
+    adminUid = pwd.getpwnam(ADMIN_USERNAME).pw_uid
+    adminGid = pwd.getpwnam(ADMIN_USERNAME).pw_gid
     ssh_path = "/home/"+ADMIN_USERNAME+"/.ssh"
     mkdirp(ssh_path, 0700)
     os.chown(ssh_path, adminUid, adminGid)
@@ -49,8 +59,8 @@ def create_admin_ssh():
 def create_dashboard_xconfig():
     log("Configuring X11...")
     dashboard_home = "/home/"+DASHBOARD_USERNAME
-    dashboardUid = getpwnam(DASHBOARD_USERNAME).pw_uid
-    dashboardGid = getpwnam(DASHBOARD_USERNAME).pw_gid
+    dashboardUid = pwd.getpwnam(DASHBOARD_USERNAME).pw_uid
+    dashboardGid = pwd.getpwnam(DASHBOARD_USERNAME).pw_gid
     xinitrcFilename = dashboard_home+"/.xinitrc"
     with open(xinitrcFilename, "w") as xinitrcFile:
         os.chown(xinitrcFilename, dashboardUid, dashboardGid)
@@ -119,8 +129,7 @@ def set_keyboard():
 
 def set_hostname():
     log("Setting hostname...")
-    with open("/etc/hostname", 'r') as hostnameFile:
-        old_hostname = hostnameFile.read()
+    old_hostname = get_current_hostname()
     hostname = raw_input("Hostname ["+old_hostname+"]: ")
     if hostname != "":
         with open("/etc/hostname", "w") as hostnameFile:
@@ -129,7 +138,7 @@ def set_hostname():
 
 def set_memory_split():
     log("Setting CPU/GPU memory split...")
-    replace_config_line("/boot/config.txt", "gpu_mem", "gpu_mem=128")
+    replace_config_line("/boot/config.txt", "gpu_mem", "gpu_mem=16")
 
 def set_screen_rotation():
     log("Setting monitor rotation...")
@@ -145,10 +154,12 @@ def set_screen_rotation():
 
 def replace_config_line(filename, search, replace):
     reader = open(filename)
+    input_lines = reader.readlines()
+    reader.close()
     writer = open(filename, 'w')
     
     foundSearch = False
-    for line in reader:
+    for line in input_lines:
         if line.startswith(search):
             writer.write(replace+"\n")
             foundSearch = True
@@ -156,7 +167,6 @@ def replace_config_line(filename, search, replace):
             writer.write(line)
     if not foundSearch:
         writer.write(replace)
-    reader.close()
     writer.close()
 
 def configure_packages():
@@ -178,17 +188,29 @@ def configure_packages():
 
 def configure_chromium():
     log("Configuring Chromium...")
-    preferencesFilename = "/home/"+DASHBOARD_USERNAME+"/.config/chromium/Default/Preferences"
-
-    
-
-    log("TODO: configure chromium to restore previous tabs on launch")
-    # maybe make it restore previous tabs on relaunch
+    log("downloading profile from "+CHROMIUM_PROFILE_URL)
+    configPath = "/home/"+DASHBOARD_USERNAME+"/.config"
+    profileArchiveFilename = urllib.urlretrieve(CHROMIUM_PROFILE_URL)[0]
+    log("installing profile")
+    subprocess.check_call(["tar", "-xzf", profileArchiveFilename, "-C", configPath])
 
 def configure_panoptichrome():
     log("Configuring Panoptichrome Chromium Extension...")
-    log("TODO: download and unpack panoptichrome chrome extension")
-    log("TODO: set initial configuration for panoptichrome chrome extension")
+    panoptichromeConfigDbFilename = "/home/"+DASHBOARD_USERNAME+"/.config/chromium/Default/Local Storage/chrome-extension_"+PANOPTICHROME_EXTENSION_ID+"_0.localstorage"
+    connection = sqlite3.connect(panoptichromeConfigDbFilename)
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO ItemTable VALUES('installationName', :hostname)", { "hostname": get_current_hostname() })
+    cursor.execute("INSERT INTO ItemTable VALUES('serverAddress', :serverAddress)", { "serverAddress": PANOPTICHROME_SERVER_ADDRESS })
+    connection.commit()
+    connection.close()
+
+def disable_pi_user():
+    log("Disabling default administrator account...")
+    subprocess.check_call(["usermod", "--expiredate", "1", "--lock", "pi"])
+
+def get_current_hostname():
+    with open("/etc/hostname", 'r') as hostnameFile:
+        return hostnameFile.read()
 
 def mkdirp(path, mode):
     try:
@@ -212,13 +234,15 @@ def main():
     set_screen_rotation()
     create_admin_user()
     create_dashboard_user()
-    configure_packages()
+    if not args.skip_packages:
+        configure_packages()
     configure_chromium()
     configure_panoptichrome()
     set_memory_split()
     set_locale()
     set_timezone()
     set_keyboard()
+    disable_pi_user()
 
     print("Done. You should reboot for changes to take effect. (sudo reboot)")
 
