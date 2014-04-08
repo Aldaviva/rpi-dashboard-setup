@@ -50,10 +50,12 @@ def create_admin_ssh():
     ssh_path = "/home/"+ADMIN_USERNAME+"/.ssh"
     mkdirp(ssh_path, 0700)
     os.chown(ssh_path, adminUid, adminGid)
+    os.chmod(ssh_path, 0700)
     authKeysFilename = ssh_path+"/authorized_keys"
-    with open(authKeysFilename, "a", 0600) as authKeysFile:
+    with open(authKeysFilename, "a") as authKeysFile:
         os.chown(authKeysFilename, adminUid, adminGid)
-        authKeysFile.write("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDXUM5hi/eUmJudlYhVPaBpXMOI907gsXMNS8eF4nS78GTDb17NTS8kDaTIG64WgBvUH8Zuy1Gw5j1pg43DoqgJJTqXIGVEJe9wPdSboU7fkfxOQN7r8pDBdRgSGr0dC4RWPPYLvm7GYNjRG1e78/u5jb21zDiyttfHo8qiLYbxzjQegN52gJFQZaBFAzUjL7K07kd3kkPYKKUYU0x1ZaA9N8vxEMGWLhTJmkQnnQCmAGyLso8rw0r0ZmRlK0jofvM1JA9EcMq6SCJaQoAWPTplPbYUz/wJSbopU3efv6N45zE0lW64epLHeHEAHZCS4R9nDxZ3A6uQKOuY9hGxbej9 ben@skadi\n")
+        os.chmod(authKeysFilename, 0600)
+        authKeysFile.write("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCfaFmFakK2DeRBbep9p+JKygSi3EOEd6OocLk+Mb13CFsR0RBN20Vpjkw3DQZiwfmh61LQKj3IKdQq++XUkPuaZzcEgjbPlEL0yCOeLIXnvjNFtmLw/zwqsx2iAfprr6riSBcUKF7/p8CwYyHy6a5702VlFEd0Fx7JucdZWVHsgT0hxfhwUuAhqN9sv244xbD1ctFkGRcfET5dr0invB21lzgo3BHPP1zD3YOAe4HXWvOpmsSo0qdwNfcUDRvAwkbM1s2Z92JSxbtZ622Z1mH3k6gYdEDtosYbsWJ3Q+1S5JLK+peIfb5KffrqLd2wR1/INLT/NwiinVHGFRH075g3 ben@skadi\n")
     replace_config_line("/etc/ssh/sshd_config", "PermitRootLogin", "PermitRootLogin no")
 
 def create_dashboard_xconfig():
@@ -109,8 +111,9 @@ def set_locale():
     with open("/etc/locale.gen", "w") as genFile:
         genFile.write(LOCALE + " UTF-8\n")
     subprocess.check_call(["locale-gen", "--purge"])
-    os.environ["LANG"] = LOCALE
-    subprocess.check_call("update-locale")
+    env = os.environ.copy()
+    env['LANG'] = LOCALE
+    subprocess.check_call("update-locale", env=env)
 
 def set_timezone():
     log("Setting timezone...")
