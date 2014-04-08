@@ -233,8 +233,8 @@ def main():
     set_screen_rotation()
     create_admin_user()
     create_dashboard_user()
-    set_locale()
     set_timezone()
+    set_locale()
     set_keyboard()
     if not args.skip_packages:
         configure_packages()
