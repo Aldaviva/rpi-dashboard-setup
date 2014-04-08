@@ -27,6 +27,7 @@ Automatically configure a stock Raspberry Pi to act as a dashboard.
 7. `sudo python rpi-dashboard-setup.py`
 8. Set the hostname at the prompt.
 9. Set the screen orientation at the prompt (or hit Enter to use the default landscape orientation).
+10. Enter passwords for the new admin account (with default username `ben`) and `dashboard` account. Skip through the prompts for Full Name, &c.
 10. Wait for a while as packages are downloaded and installed.
 11. `sudo reboot`
 12. After the Raspberry Pi boots into the fullscreen Chromium interface, you can interact with it remotely using Panoptichrome. Log into your Panoptichrome admin interface and look for the new entry named after the Raspberry Pi's hostname.
