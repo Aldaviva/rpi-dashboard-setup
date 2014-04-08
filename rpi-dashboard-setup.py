@@ -25,7 +25,7 @@ def create_admin_user():
     log("Creating admin user "+ADMIN_USERNAME+"...")
     admin_user_exists = 0 == subprocess.call(["id", ADMIN_USERNAME], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if admin_user_exists:
-        logging.warn(ADMIN_USERNAME + " already exists, leaving user and groups alone.")
+        log(ADMIN_USERNAME + " already exists, leaving user and groups alone.")
     else:
         subprocess.check_call(["adduser", "--quiet", ADMIN_USERNAME])
         subprocess.check_call(["usermod", "-a", "-G", "sudo", ADMIN_USERNAME])
@@ -35,7 +35,7 @@ def create_dashboard_user():
     log("Creating dashboard user...")
     dashboard_user_exists = 0 == subprocess.call(["id", DASHBOARD_USERNAME], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if dashboard_user_exists:
-        logging.warn(DASHBOARD_USERNAME + " already exists, leaving user alone.")
+        log(DASHBOARD_USERNAME + " already exists, leaving user alone.")
     else:
         subprocess.check_call(["adduser", "--quiet", DASHBOARD_USERNAME])
     create_dashboard_xconfig()
