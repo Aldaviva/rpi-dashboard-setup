@@ -233,14 +233,14 @@ def main():
     set_screen_rotation()
     create_admin_user()
     create_dashboard_user()
+    set_locale()
+    set_timezone()
+    set_keyboard()
     if not args.skip_packages:
         configure_packages()
     configure_chromium()
     configure_panoptichrome()
     set_memory_split()
-    set_locale()
-    set_timezone()
-    set_keyboard()
     disable_pi_user()
 
     print("Done. You should reboot for changes to take effect. (sudo reboot)")
