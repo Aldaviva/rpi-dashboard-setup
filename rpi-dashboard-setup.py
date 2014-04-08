@@ -111,9 +111,9 @@ def set_locale():
     with open("/etc/locale.gen", "w") as genFile:
         genFile.write(LOCALE + " UTF-8\n")
     subprocess.check_call(["locale-gen", "--purge"])
-    env = os.environ.copy()
-    env['LANG'] = LOCALE
-    subprocess.check_call("update-locale", env=env)
+    # env = os.environ.copy()
+    # env['LANG'] = LOCALE
+    subprocess.check_call(["update-locale", "LANG="+LOCALE])
 
 def set_timezone():
     log("Setting timezone...")
