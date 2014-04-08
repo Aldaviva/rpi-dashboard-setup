@@ -210,7 +210,7 @@ def disable_pi_user():
 
 def get_current_hostname():
     with open("/etc/hostname", 'r') as hostnameFile:
-        return hostnameFile.read()
+        return hostnameFile.read().strip()
 
 def mkdirp(path, mode):
     try:
