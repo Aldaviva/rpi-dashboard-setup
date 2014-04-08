@@ -27,6 +27,7 @@ def create_admin_user():
     if admin_user_exists:
         log(ADMIN_USERNAME + " already exists, leaving user and groups alone.")
     else:
+        print
         subprocess.check_call(["adduser", "--quiet", ADMIN_USERNAME])
         subprocess.check_call(["usermod", "-a", "-G", "sudo", ADMIN_USERNAME])
         create_admin_ssh()
@@ -37,6 +38,7 @@ def create_dashboard_user():
     if dashboard_user_exists:
         log(DASHBOARD_USERNAME + " already exists, leaving user alone.")
     else:
+        print
         subprocess.check_call(["adduser", "--quiet", DASHBOARD_USERNAME])
     create_dashboard_xconfig()
 
@@ -165,12 +167,12 @@ def replace_config_line(filename, search, replace):
         else:
             writer.write(line)
     if not foundSearch:
-        writer.write(replace)
+        writer.write(replace+"\n")
     writer.close()
 
 def configure_packages():
     packagesToAdd = ["emacs23-nox", "libusb-1.0-0-dev", "screen", "chromium", "unclutter", "x11vnc", "xdotool", "htop", "x11-xserver-utils"]
-    packagesToRemove = ["gnome-icon-theme", "gnome-themes-standard-data", "lxde", "lxde-core", "dillo", "midori", "desktop-base", "lightdm", "lxappearance", "lxde-common", "lxde-icon-theme", "lxinput", "lxpanel", "lxpolkit", "lxrandr", "lxsession-edit", "lxshortcut", "lxtask", "lxterminal", "weston"]
+    packagesToRemove = ["gnome-icon-theme", "gnome-themes-standard-data", "lxde", "lxde-core", "dillo", "midori", "desktop-base", "lightdm", "lxappearance", "lxde-common", "lxde-icon-theme", "lxinput", "lxpanel", "lxpolkit", "lxrandr", "lxsession-edit", "lxsession", "lxshortcut", "lxtask", "lxterminal", "weston", "pistore", "wolfram-engine", "pcmanfm"]
     
     log("Updating apt catalog...")
     subprocess.check_call(["apt-get", "update"])
