@@ -4,13 +4,10 @@ import pwd
 import errno
 import argparse
 import fileinput
-import logging
 import os
 import sqlite3
 import subprocess
 import urllib
-
-logging.basicConfig(level=logging.DEBUG)
 
 ADMIN_USERNAME               = "ben"
 CHROMIUM_PROFILE_URL         = "http://skadi.bluejeansnet.com/rpi-dashboard/chromium-profile.tar.gz"
@@ -228,7 +225,7 @@ def ensure_root():
         exit("Root required")
 
 def log(message):
-    logging.info(message)
+    print(message)
 
 def main():
     ensure_root()
