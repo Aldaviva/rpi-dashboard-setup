@@ -129,7 +129,7 @@ def set_keyboard():
 def set_hostname():
     log("Setting hostname...")
     old_hostname = get_current_hostname()
-    hostname = raw_input("Hostname ["+old_hostname+"]: ")
+    hostname = raw_input("\nHostname ["+old_hostname+"]: ")
     if hostname != "":
         with open("/etc/hostname", "w") as hostnameFile:
             hostnameFile.write(hostname)
@@ -141,7 +141,7 @@ def set_memory_split():
 
 def set_screen_rotation():
     log("Setting monitor rotation...")
-    print("How is the monitor oriented?")
+    print("\nHow is the monitor oriented?")
     print(" (1 = portrait, monitor was rotated counter-clockwise)")
     print(" (2 = landscape)")
     print(" (3 = portrait, monitor was rotated clockwise)")
@@ -234,13 +234,13 @@ def main():
     create_admin_user()
     create_dashboard_user()
     set_timezone()
-    set_locale()
     set_keyboard()
     if not args.skip_packages:
         configure_packages()
     configure_chromium()
     configure_panoptichrome()
     set_memory_split()
+    set_locale()
     disable_pi_user()
 
     print("Done. You should reboot for changes to take effect. (sudo reboot)")
