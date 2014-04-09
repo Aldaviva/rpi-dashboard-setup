@@ -139,7 +139,7 @@ def set_hostname():
 
 def set_memory_split():
     log("Setting CPU/GPU memory split...")
-    replace_config_line("/boot/config.txt", "gpu_mem", "gpu_mem=16")
+    replace_config_line("/boot/config.txt", "gpu_mem", "gpu_mem=32")
 
 def set_screen_rotation():
     log("Setting monitor rotation...")
