@@ -144,13 +144,14 @@ def set_memory_split():
 def set_screen_rotation():
     log("Setting monitor rotation...")
     print("\nHow is the monitor oriented?")
+    print(" (0 = landscape)")
     print(" (1 = portrait, monitor was rotated counter-clockwise)")
-    print(" (2 = landscape)")
+    print(" (1 = landscape, upside-down)")
     print(" (3 = portrait, monitor was rotated clockwise)")
-    orientation=raw_input("enter one of (1, 2, 3) [2]: ")
-    if (orientation != '') and (orientation not in ["1", "2", "3"]):
+    orientation=raw_input("enter one of (0, 1, 2, 3) [0]: ")
+    if (orientation != '') and (orientation not in ["0", "1", "2", "3"]):
         print("Invalid orientation value '%s', assuming landscape.") % orientation
-        orientation = "2"
+        orientation = "0"
     replace_config_line("/boot/config.txt", "display_rotate", "display_rotate="+str(orientation))
 
 def replace_config_line(filename, search, replace):
