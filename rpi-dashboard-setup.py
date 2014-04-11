@@ -80,7 +80,6 @@ def create_dashboard_xconfig():
         x11vncrcFile.write("nopw\n")
         x11vncrcFile.write("logappend /var/log/x11vnc\n")
         x11vncrcFile.write("forever\n")
-        x11vncrcFile.write("ncache 10\n")
 
     log("Configuring window manager...")
     openboxConfigPath = dashboard_home+"/.config/openbox"
@@ -91,7 +90,7 @@ def create_dashboard_xconfig():
         os.chown(autostartFilename, dashboardUid, dashboardGid)
         autostartFile.write('xsetroot -solid "#000000" &\n')
         autostartFile.write('unclutter &\n')
-        autostartFile.write('chromium &\n')
+        autostartFile.write('sed -i \'s/"exited_cleanly":\\s*false/"exited_cleanly": true/\' ~/.config/chromium/Default/Preferences; chromium &\n')
         autostartFile.write('sleep 25; xdotool key F11 &\n')
         autostartFile.write('sleep 15; x11vnc &\n')
 
